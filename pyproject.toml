@@ -2,25 +2,14 @@
 name = "crown-file-processing"
 version = "0.1.0"
 description = ""
-authors = ["hungpm372 <hungpm372@gmail.com>"]
-license = "MIT"
+authors = ["VIET-GITL <viet.info.43@gmail.com>"]
 readme = "README.md"
-package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = "^0.110.0"
-pydantic = {extras = ["email"], version = "^2.6.4"}
-uvicorn = "^0.28.0"
-python-dotenv = "^1.0.1"
-sqlalchemy = "^2.0.25"
+fastapi = "^0.111.0"
+pydantic = "^2.7.3"
 alembic = "^1.13.1"
-psycopg2 = "^2.9.9"
-asyncpg = "^0.25.0"
-pydantic-settings = "^2.2.1"
-python-jose = {extras = ["cryptography"], version = "^3.3.0"}
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
-requests = "^2.31.0"
 
 
 [build-system]
