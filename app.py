@@ -1,69 +1,66 @@
 import os
-import shutil
 import zipfile
-import logging
-from datetime import datetime
-from fastapi import FastAPI, UploadFile
-from constant import CrownFileProcessingConstant
+from constants import crown_file_prc_zip_constants
+from settings import Config
 
-app = FastAPI()
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = Config.setup_logging()
 
 
-@app.post("/process-zip/")
-async def process_zip(file: UploadFile):
-    return extract_and_process_zip(file)
+def extract_files(zip_file, bot_folder, hand_folder):
+    logger.info(f"Read {zip_file} zip file to get list of files inside")
+    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+        file_names = zip_ref.namelist()
 
+        logger.info("check if the directory exists or not")
+        if not os.path.exists(bot_folder):
+            os.makedirs(bot_folder)
 
-def extract_and_process_zip(file):
-    try:
-        os.makedirs(CrownFileProcessingConstant.DATA_PATH, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        # Save the uploaded file
-        zip_path = os.path.join(CrownFileProcessingConstant.DATA_PATH, timestamp + file.filename)
-        with open(zip_path, 'wb') as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        if not os.path.exists(hand_folder):
+            os.makedirs(hand_folder)
 
-        # Extract the ZIP file
-        extract_dir_name = os.path.splitext(timestamp + file.filename)[0]
-        extract_path = os.path.join(CrownFileProcessingConstant.OUTPUT_PATH, extract_dir_name)
-        bot_path = os.path.join(extract_path, CrownFileProcessingConstant.BOT_PATH)
-        hand_path = os.path.join(extract_path, CrownFileProcessingConstant.HAND_PATH)
+        # Dictionary to track base names and their file types
+        base_name_dict = {}
 
-        os.makedirs(bot_path, exist_ok=True)
-        os.makedirs(hand_path, exist_ok=True)
-
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_path)
-
-        file_dict = {}
-        for item in os.listdir(extract_path):
-            item_path = os.path.join(extract_path, item)
-            if os.path.isfile(item_path):
-                base_name, ext = os.path.splitext(item)
-                file_dict.setdefault(base_name, []).append(ext)
-
-        for base_name, exts in file_dict.items():
-            xml_file = f"{base_name}.xml"
-            pdf_file = f"{base_name}.pdf"
-            xml_path = os.path.join(extract_path, xml_file)
-            pdf_path = os.path.join(extract_path, pdf_file)
-
-            if ".xml" in exts and ".pdf" in exts:
-                shutil.move(xml_path, bot_path)
-                shutil.move(pdf_path, bot_path)
+        for file_name in file_names:
+            base_name, extension = os.path.splitext(file_name)
+            if extension in ['.pdf', '.xml']:
+                if base_name in base_name_dict:
+                    base_name_dict[base_name].append(file_name)
+                else:
+                    base_name_dict[base_name] = [file_name]
             else:
-                for ext in exts:
-                    shutil.move(os.path.join(extract_path, f"{base_name}{ext}"), hand_path)
+                base_name_dict[base_name] = [file_name]
 
-        result = {
-            'count_bot': len(os.listdir(bot_path)),
-            'root_pt_bot': os.path.abspath(bot_path),
-            'count_hand': len(os.listdir(hand_path)),
-            'root_pt_hand': os.path.abspath(hand_path),
-        }
+            # Extract files based on the presence of both .pdf and .xml extensions
+            count_bot = 0
+            count_hand = 0
+        for base_name, files in base_name_dict.items():
+            if len(files) > 1:
+                for file_name in files:
+                    count_bot += 1
+                    zip_ref.extract(file_name, bot_folder)
+            else:
+                count_hand += 1
+                zip_ref.extract(files[0], hand_folder)
+    logger.info(f"in bot have : {count_bot} ")
+    logger.info(f"in hand have: {count_hand}")
+    result_dict = {
+        "count_bot": count_bot,
+        "root_pth_boot": bot_folder,
+        "count_hand": count_hand,
+        "root_pth_hand": hand_folder
+    }
+    logger.info(f'{result_dict}')
+    return result_dict
 
-        return result
-    except Exception as e:
-        logging.error(f"Error processing {file.filename}: {e}")
-        return {"error": str(e)}
+
+if __name__ == "__main__":
+    data_folder = f'{crown_file_prc_zip_constants.DATA}'
+    for file_name in os.listdir(data_folder):
+        if file_name.endswith('.zip'):
+            zip_file = os.path.join(data_folder, file_name)
+            zip_file_name = os.path.splitext(file_name)[0]
+            bot_folder = f'{crown_file_prc_zip_constants.OUTPUT}/{zip_file_name}/bot'
+            hand_folder = f'{crown_file_prc_zip_constants.OUTPUT}/{zip_file_name}/hand'
+            extract_files(zip_file, bot_folder, hand_folder)
+    logger.info("successfully !")

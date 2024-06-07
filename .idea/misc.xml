@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
   <component name="Black">
     <option name="sdkName" value="Python 3.10 (crown_file_processing)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (crown_file_processing) (2)" project-jdk-type="Python SDK" />
+=======
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (fundamental-fastapi-project)" project-jdk-type="Python SDK" />
+>>>>>>> 0762300 (feature/word_with_file_zip)
 </project>
