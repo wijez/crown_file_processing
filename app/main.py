@@ -1,8 +1,7 @@
-import uvicorn
 from fastapi import FastAPI
-from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.core import get_settings, engine, Base
+from app.core import get_settings
+from app.routes import init_router
 
 settings = get_settings()
 
@@ -12,7 +11,4 @@ app = FastAPI(
     version=settings.APP_VERSION
 )
 
-
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
+init_router(app)
