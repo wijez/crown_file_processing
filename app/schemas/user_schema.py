@@ -24,9 +24,13 @@ class UserCreateSchema(UserBase):
     verify_code: Optional[str]
 
 
-class UserUpdateSchema(UserBase):
-    pass
+class UserUpdateSchema(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 
 class UserSchema(UserBase):
     id: int
+
+
+

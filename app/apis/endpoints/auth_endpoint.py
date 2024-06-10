@@ -2,11 +2,14 @@ from fastapi import Request, Response, status, Depends, APIRouter
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import get_settings
+from app.core import get_settings, Config
 from app.services import AuthService
 from app.apis.depends import get_session
 
 from app.schemas import ResponseSchema, UserCreateSchema, UserLoginSchema, UserVerifyCodeSchema
+
+logger = Config.setup_logging()
+
 
 settings = get_settings()
 
@@ -15,13 +18,17 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=ResponseSchema)
 async def register(request_body: UserCreateSchema, session: get_session):
+    logger.info('endpoints: register called')
     result = await AuthService.register(schema=request_body, session=session)
+    logger.info("endpoint: register successfully!")
     return ResponseSchema(status_code=status.HTTP_200_OK, detail='Register successfully', result=result)
 
 
 @router.post("/verify-code", response_model=ResponseSchema)
 async def verify_code(request_body: UserVerifyCodeSchema, session: get_session):
+    logger.info('endpoints: verify called')
     await AuthService.verify_code(schema=request_body, session=session)
+    logger.info('endpoints: verify successfully !')
     return ResponseSchema(status_code=status.HTTP_200_OK, detail='Verify code successfully')
 
 

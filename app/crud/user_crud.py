@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, List
 
-from sqlalchemy import update as sql_update
+from sqlalchemy import update as sql_update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import User
@@ -9,6 +9,10 @@ from app.schemas import UserSchema, UserCreateSchema, UserUpdateSchema
 
 
 class CRUDUser(CRUDBase[UserSchema, UserCreateSchema, UserUpdateSchema]):
+
+    def __init__(self, model):
+        super().__init__(model)
+
     async def find_one_by_id(self, id: int, session: AsyncSession) -> Optional[User]:
         return await self.get(session, User.id == id)
 
