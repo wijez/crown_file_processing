@@ -5,10 +5,10 @@ description = ""
 authors = ["hungpm372 <hungpm372@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
-<<<<<<< HEAD
 fastapi = "^0.110.0"
 pydantic = {extras = ["email"], version = "^2.6.4"}
 uvicorn = "^0.28.0"
@@ -22,8 +22,6 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 requests = "^2.31.0"
 fastapi-mail = "^1.4.1"
-=======
->>>>>>> parent of e908954 (Config project)
 
 
 [build-system]
