@@ -38,6 +38,15 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_HOURS: int = os.environ.get("REFRESH_TOKEN_EXPIRE_HOURS", "5")
     REFRESH_TOKEN_COOKIE_NAME: str = os.environ.get("REFRESH_TOKEN_COOKIE_NAME", "fastapi_cookie")
 
+    # Email Config
+    MAIL_USER: str = os.environ.get("MAIL_USER")
+    MAIL_PASSWORD: str = os.environ.get("MAIL_PASSWORD")
+    MAIL_PORT: int = os.environ.get("MAIL_PORT", 465)
+    MAIL_SERVER: str = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+    MAIL_SSL_TLS: bool = os.environ.get("MAIL_SSL_TLS", True)
+    MAIL_STARTTLS: bool = os.environ.get("MAIL_STARTTLS", False)
+    VALIDATE_CERTS: bool = os.environ.get("VALIDATE_CERTS", True)
+
 
 @lru_cache()
 def get_settings() -> Settings:
