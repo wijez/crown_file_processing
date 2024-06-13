@@ -48,8 +48,7 @@ class UserService:
 
     async def get_list_user(self, limit: int, offset: int):
         logger.info("Service: get_list_user called")
-        result = await crud_user.get_multi_(self.session, limit=limit, offset=offset)
-        print("result", result)
+        result = await crud_user.get_multi(self.session, limit=limit, offset=offset)
         logger.info("Service: get_list_user called successfully!")
         return result
 
@@ -65,3 +64,15 @@ class UserService:
         result = await crud_user.delete(self.session, user_id)
         logger.info("Service: delete_user called successfully!")
         return result
+
+    async def get_one_by_id(self, user_id: int):
+        logger.info("Service: get_one_by_id called")
+        user = await crud_user.get(self.session, User.id == user_id)
+        if not user:
+            logger.error("Service: delete_user error user id not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="id user not found"
+            )
+
+        logger.info("Service: get_one_by_id called successfully!")
+        return user

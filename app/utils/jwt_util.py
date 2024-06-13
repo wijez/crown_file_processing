@@ -26,6 +26,21 @@ def generate_token(data: dict, expires_delta: Optional[timedelta] = None) -> str
     return encode_jwt
 
 
+# def generate_token(data: dict, expires_delta: Optional[timedelta] = None, token_type: str = None) -> str:
+#     to_encode = data.copy()
+#     if expires_delta:
+#         expire = datetime.utcnow() + expires_delta
+#     else:
+#         expire = datetime.utcnow() + timedelta(minutes=15)
+#
+#     to_encode.update({"iat": datetime.utcnow(), "exp": expire})
+#     if token_type:
+#         to_encode.update({"token_type": token_type})
+#
+#     encode_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
+#     return encode_jwt
+
+
 def decode_token(token: str) -> dict:
     try:
         # Attempt to decode the token, and check for expiration
@@ -70,3 +85,21 @@ def clear_refresh_token(response: Response):
         samesite="lax",
         path=f"{settings.BASE_API_SLUG}/auth/refresh-token"
     )
+
+# def create_token(data: dict, token_type: str, expires_delta: timedelta):
+#     to_encode = data.copy()
+#     to_encode.update({"token_type": token_type, "exp": datetime.utcnow() + expires_delta})
+#     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
+#     return encoded_jwt
+#
+#
+# def create_access_token(user: User):
+#     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+#     data = {"user_id": user.id, "username": user.username}
+#     return generate_token(data, expires_delta=access_token_expires, token_type="access")
+#
+#
+# def create_refresh_token(user: User):
+#     refresh_token_expires = timedelta(hours=settings.REFRESH_TOKEN_EXPIRE_HOURS)
+#     data = {"user_id": user.id, "username": user.username}
+#     return generate_token(data, expires_delta=refresh_token_expires, token_type="refresh")
