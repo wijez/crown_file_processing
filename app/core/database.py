@@ -8,3 +8,5 @@ settings = get_settings()
 engine = create_async_engine(settings.DATABASE_URI, echo=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
 Base = declarative_base()
+
+

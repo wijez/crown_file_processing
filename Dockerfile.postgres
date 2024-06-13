@@ -1,0 +1,16 @@
+FROM postgres:16
+
+LABEL maintainer="admin"
+
+# Install pgagent
+RUN apt-get update && apt-get -y install pgagent
+
+# Copy initialization scripts
+COPY ./pg_init_scripts/create_extension.sh /docker-entrypoint-initdb.d/
+# Custom start pgagent script
+COPY ./pg_init_scripts/start_pg_agent.sh /start_pg_agent.sh
+
+RUN chmod +x /docker-entrypoint-initdb.d/create_extension.sh
+RUN chmod +x /start_pg_agent.sh
+
+ENTRYPOINT ["/start_pg_agent.sh"]

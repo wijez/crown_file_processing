@@ -16,16 +16,19 @@ class Settings(BaseSettings):
     APP_VERSION: str = os.environ.get("APP_VERSION", "0.1.0")
     APP_HOST: str = os.environ.get("APP_HOST", "localhost")
     APP_PORT: int = os.environ.get("APP_PORT", 8000)
-    BASE_API_SLUG: str = os.environ.get("BASE_API_SLUG", "/v1/api")
+    BASE_API_SLUG: str = os.environ.get("BASE_API_SLUG", "/api")
     DEBUG: bool = bool(os.environ.get("DEBUG", False))
 
+    # middleware
+    ALLOW_ORIGINS: list
+
     # Postgresql Database Config
-    POSTGRESQL_HOST: str = os.environ.get("POSTGRESQL_HOST", 'localhost')
-    POSTGRESQL_USER: str = os.environ.get("POSTGRESQL_USER", 'root')
-    POSTGRESQL_PASS: str = os.environ.get("POSTGRESQL_PASSWORD", 'secret')
-    POSTGRESQL_PORT: int = int(os.environ.get("POSTGRESQL_PORT", 5432))
-    POSTGRESQL_DB: str = os.environ.get("POSTGRESQL_DB", 'fastapi')
-    DATABASE_URI: str = f"postgresql+asyncpg://{POSTGRESQL_USER}:{POSTGRESQL_PASS}@{POSTGRESQL_HOST}:{POSTGRESQL_PORT}/{POSTGRESQL_DB}"
+    POSTGRES_HOST: str = os.environ.get("POSTGRES_HOST", 'localhost')
+    POSTGRES_USER: str = os.environ.get("POSTGRES_USER", 'postgres')
+    POSTGRES_PASSWORD: str = os.environ.get("POSTGRES_PASSWORD", 'portgasDace')
+    POSTGRES_PORT: int = int(os.environ.get("POSTGRES_PORT", 5432))
+    POSTGRES_DB: str = os.environ.get("POSTGRES_DB", 'crown-file-processing')
+    DATABASE_URI: str = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
     # App Secret Key
     SECRET_KEY: str = os.environ.get("SECRET_KEY", "8deadce9449770680910741063cd0a3fe0acb62a8978661f421bbcbb66dc41f1")
@@ -46,6 +49,9 @@ class Settings(BaseSettings):
     MAIL_SSL_TLS: bool = os.environ.get("MAIL_SSL_TLS", True)
     MAIL_STARTTLS: bool = os.environ.get("MAIL_STARTTLS", False)
     VALIDATE_CERTS: bool = os.environ.get("VALIDATE_CERTS", True)
+
+    OPA_SERVER: str = os.environ.get("OPA_SERVER", "localhost")
+    OPA_SERVER_PORT: str = os.environ.get("OPA_SERVER_PORT", "8181")
 
 
 @lru_cache()

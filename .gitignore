@@ -180,3 +180,6 @@ pyrightconfig.json
 .idea
 output
 data
+postgres_data
+app/opa/bundle.tar.gz
+
