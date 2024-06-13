@@ -5,6 +5,7 @@ from app.models import User
 from app.crud import crud_user
 from app.core import get_settings, Config
 from app.schemas import UserCreateSchema, UserUpdateSchema
+from app.utils import hash_password, generate_verify_code, send_email
 
 settings = get_settings()
 
@@ -29,9 +30,13 @@ class UserService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="username already exists"
             )
+        user.password = hash_password(user.password)
+        verify_code = generate_verify_code()
+        user.verify_code = verify_code
         result = await crud_user.create(self.session, user)
         logger.info("Service: create_user called successfully!")
-        return result
+        await send_email(to=result.email, subject="Verify account", contents=verify_code)
+        return result.dict(un_selects=["password"])
 
     async def update_user(self, user: UserUpdateSchema, user_id: int):
         logger.info("Service: update_user called")
