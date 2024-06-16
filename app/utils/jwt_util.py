@@ -53,12 +53,12 @@ def verify_jwt(token: str):
 
 
 def create_access_token(user: User):
-    return (generate_token(data={"user_id": user.id, "username": user.username},
+    return (generate_token(data={"user_id": str(user.id), "username": user.username},
                            expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)))
 
 
 def create_refresh_token(user: User):
-    return (generate_token(data={"user_id": user.id, "username": user.username},
+    return (generate_token(data={"user_id": str(user.id), "username": user.username},
                            expires_delta=timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_HOURS)))
 
 

@@ -1,4 +1,5 @@
 from typing import Optional, List
+from uuid import UUID
 
 from sqlalchemy import update as sql_update, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +14,7 @@ class CRUDUser(CRUDBase[UserSchema, UserCreateSchema, UserUpdateSchema]):
     def __init__(self, model):
         super().__init__(model)
 
-    async def find_one_by_id(self, id: int, session: AsyncSession) -> Optional[User]:
+    async def find_one_by_id(self, id: UUID, session: AsyncSession) -> Optional[User]:
         return await self.get(session, User.id == id)
 
     async def find_one_by_username(self, username: str, session: AsyncSession) -> Optional[User]:
@@ -26,7 +27,7 @@ class CRUDUser(CRUDBase[UserSchema, UserCreateSchema, UserUpdateSchema]):
         return await self.create(session=session, obj_in=schema)
 
     @staticmethod
-    async def update_token_version(session: AsyncSession, id: int, token_version: int):
+    async def update_token_version(session: AsyncSession, id: UUID, token_version: int):
         query = sql_update(User).where(
             User.id == id).values(token_version=token_version).execution_options(
             synchronize_session="fetch")

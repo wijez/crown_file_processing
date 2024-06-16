@@ -1,9 +1,13 @@
+from uuid import UUID
+
 from fastapi import status, Depends, APIRouter
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPAuthorizationCredentials
+from starlette.responses import JSONResponse
 
 from app.core import get_settings, Config
 from app.apis.depends import get_session
-from app.apis.depends.check_auth import check_auth, check_user_permissions
+from app.apis.depends.check_auth import check_auth, check_user_permissions, get_current_active_user
 from app.models import User
 from app.services.users_service import UserService
 from app.schemas import UserCreateSchema, UserUpdateSchema
@@ -28,7 +32,7 @@ async def create_user(request_body: UserCreateSchema, session: get_session,
 
 
 @router.put("/{user_id}")
-async def update_user(request_body: UserUpdateSchema, user_id: int, session: get_session,
+async def update_user(request_body: UserUpdateSchema, user_id: UUID, session: get_session,
                       user_decode: HTTPAuthorizationCredentials = Depends(check_auth),
                       user: User = Depends(check_user_permissions)):
     logger.info("Endpoint: update_user called")
@@ -51,7 +55,7 @@ async def get_list_user(session: get_session,
 
 
 @router.delete("/{user_id}")
-async def delete_user(user_id: int, session: get_session,
+async def delete_user(user_id: UUID, session: get_session,
                       user_decode: HTTPAuthorizationCredentials = Depends(check_auth),
                       user: User = Depends(check_user_permissions)):
     logger.info("Endpoint: delete_user called")
@@ -59,3 +63,10 @@ async def delete_user(user_id: int, session: get_session,
     result = await user_service.delete_user(user_id)
     logger.info("Endpoint: delete_user successfully!")
     return result
+
+
+@router.get("/me")
+async def get_me(user: User = Depends(get_current_active_user)):
+    data = user.dict(un_selects=["id", "verify_code", "password"])
+    logger.info("Endpoint: get_me successfully!")
+    return JSONResponse(content=jsonable_encoder(data))

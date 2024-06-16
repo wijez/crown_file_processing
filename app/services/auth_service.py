@@ -1,8 +1,10 @@
 from typing import Annotated
 
 from fastapi import Request, Response, HTTPException, status, Header
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import JSONResponse
 
 from app.core import get_settings
 from app.crud import crud_user
@@ -32,12 +34,12 @@ class AuthService:
         refresh_token = create_refresh_token(user=created_user)
 
         await send_email(to=created_user.email, subject="Verify account", contents=verify_code)
-
-        return {
+        result = {
             "data": created_user.dict(un_selects=["password"]),
             "access_token": access_token,
             "refresh_token": refresh_token
         }
+        return result
 
     @staticmethod
     async def verify_code(schema: UserVerifyCodeSchema, session: AsyncSession):

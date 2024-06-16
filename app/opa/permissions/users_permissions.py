@@ -1,12 +1,16 @@
 import logging
+import uuid
+import json
 from enum import Enum
-from typing import Union, List
+from typing import Union, List, Optional
 
-from fastapi import Request
+from fastapi import Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 from app.models import User
 from app.opa.permissions.base_permissions import OpenPolicyAgentPermission
+from app.services import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +30,7 @@ class UserPermission(OpenPolicyAgentPermission):
     @staticmethod
     def get_scopes(request: Request) -> List[UserScopes]:
         user_id = request.path_params.get('user_id', None)
+
         path = request.url.path
         method = request.method
 
@@ -42,6 +47,7 @@ class UserPermission(OpenPolicyAgentPermission):
     async def create(cls, request: Request, session: AsyncSession, user: Union[User, None]) \
             -> List[OpenPolicyAgentPermission]:
         permissions = []
+        body_json = await request.json()
         user_id = request.path_params.get('user_id', None)
         scopes_map = {
             'POST': cls.UserScopes.CREATE,
@@ -56,19 +62,19 @@ class UserPermission(OpenPolicyAgentPermission):
         if path.startswith(f'/api/users') and method == "POST":
             scope = scopes_map[method]
             perm = cls.create_base_perm(scope=scope.value, user_id=user.id, role=user.role.value)
-            await perm.get_resource(session=session)
+            await perm.get_resource(session=session, request=request, user=user)
             permissions.append(perm)
 
         elif path.startswith(f'/api/users/{user_id}') and method == "PUT":
             scope = scopes_map[method]
             perm = cls.create_base_perm(scope=scope.value, user_id=user.id, role=user.role.value)
-            await perm.get_resource(session=session)
+            await perm.get_resource(session=session, user_id=user_id)
             permissions.append(perm)
 
         elif path.startswith(f'/api/users/{user_id}') and method == "DELETE":
             scope = scopes_map[method]
             perm = cls.create_base_perm(scope=scope.value, user_id=user.id, role=user.role.value)
-            await perm.get_resource(session=session)
+            await perm.get_resource(session=session, user_id=user_id)
             permissions.append(perm)
 
         elif path.startswith(f'/api/users') and method == "GET":
@@ -79,7 +85,7 @@ class UserPermission(OpenPolicyAgentPermission):
 
         return permissions
 
-    async def get_resource(self, session: AsyncSession):
+    async def get_resource(self, session: AsyncSession, **kwargs):
         switch_scope = {
             self.UserScopes.CREATE.value: self.handle_create_scope,
             self.UserScopes.LIST.value: self.handle_list_scope,
@@ -90,10 +96,15 @@ class UserPermission(OpenPolicyAgentPermission):
 
         handler = switch_scope.get(self.scope)
         if handler:
-            await handler(session=session)
+            await handler(session=session, **kwargs)
 
-    async def handle_create_scope(self, session: AsyncSession):
-        pass
+    async def handle_create_scope(self, session: AsyncSession, **kwargs):
+        request: Optional[Request] = kwargs.get("request", None)
+        request_body = await request.body()
+        body_json = json.loads(request_body.decode("utf-8"))
+        self.payload['input']['resource'] = {
+            "role": body_json.get("role", 'MEMBER'),
+        }
 
     async def handle_list_scope(self, session: AsyncSession):
         pass
@@ -101,8 +112,19 @@ class UserPermission(OpenPolicyAgentPermission):
     async def handle_read_scope(self, session: AsyncSession):
         pass
 
-    async def handle_update_scope(self, session: AsyncSession):
-        pass
+    async def handle_update_scope(self, session: AsyncSession, **kwargs):
+        user_id = kwargs.get("user_id", uuid.uuid4())
+        user_service = UserService(session=session)
+        user_updated = await user_service.get_one_by_id(user_id=user_id)
+        self.payload['input']['resource'] = {
+            "role": user_updated.role.value
+        }
 
-    async def handle_delete_scope(self, session: AsyncSession):
-        pass
+    async def handle_delete_scope(self, session: AsyncSession, **kwargs):
+        user_id = kwargs.get("user_id", uuid.uuid4())
+        user_service = UserService(session=session)
+        user_deleted = await user_service.get_one_by_id(user_id=user_id)
+        print("user_delete", user_deleted.role.value)
+        self.payload['input']['resource'] = {
+            "role": user_deleted.role.value
+        }

@@ -1,6 +1,9 @@
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
+
+from app.models.users_model import UserRole
 
 
 class UserBase(BaseModel):
@@ -21,6 +24,7 @@ class UserVerifyCodeSchema(BaseModel):
 
 
 class UserCreateSchema(UserBase):
+    role: Optional[UserRole]
     verify_code: Optional[str]
 
 
@@ -30,7 +34,8 @@ class UserUpdateSchema(BaseModel):
 
 
 class UserSchema(UserBase):
-    id: int
+    id: UUID
+
 
 
 

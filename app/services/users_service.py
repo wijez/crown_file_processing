@@ -1,5 +1,10 @@
+import uuid
+from uuid import UUID
+
 from fastapi import HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import JSONResponse
 
 from app.models import User
 from app.crud import crud_user
@@ -38,7 +43,7 @@ class UserService:
         await send_email(to=result.email, subject="Verify account", contents=verify_code)
         return result.dict(un_selects=["password"])
 
-    async def update_user(self, user: UserUpdateSchema, user_id: int):
+    async def update_user(self, user: UserUpdateSchema, user_id: UUID):
         logger.info("Service: update_user called")
         user_by_id = await crud_user.find_one_by_id(user_id, self.session)
         if not user_by_id:
@@ -49,28 +54,30 @@ class UserService:
 
         result = await crud_user.update(self.session, obj_in=user, db_obj=user_by_id)
         logger.info("Service: update_user called successfully")
-        return result
+        return JSONResponse(content=jsonable_encoder(result))
 
     async def get_list_user(self, limit: int, offset: int):
         logger.info("Service: get_list_user called")
         result = await crud_user.get_multi(self.session, limit=limit, offset=offset)
         logger.info("Service: get_list_user called successfully!")
-        return result
+        result_list = [user.dict(un_selects=["password"]) for user in result]
+        return JSONResponse(content=jsonable_encoder(result_list))
 
-    async def delete_user(self, user_id: int):
+    async def delete_user(self, user_id: UUID):
         logger.info("Service: delete_user called")
         user_delete = await crud_user.get(self.session, User.id == user_id)
+        print(" user_delete ",  user_delete )
         if not user_delete:
             logger.error("Service: delete_user error user id not found")
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="id user not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="id user not found."
             )
 
-        result = await crud_user.delete(self.session, user_id)
+        result = await crud_user.delete(self.session, db_obj=user_delete)
         logger.info("Service: delete_user called successfully!")
         return result
 
-    async def get_one_by_id(self, user_id: int):
+    async def get_one_by_id(self, user_id: UUID):
         logger.info("Service: get_one_by_id called")
         user = await crud_user.get(self.session, User.id == user_id)
         if not user:
