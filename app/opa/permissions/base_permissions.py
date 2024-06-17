@@ -2,11 +2,11 @@ import logging
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import Sequence, List, Union, Optional
+from uuid import UUID
 
 import httpx
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
-
 
 from fastapi import HTTPException, status
 from app.core import get_settings
@@ -15,6 +15,7 @@ from app.models.users_model import UserRole
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
 
 class PermissionResult:
     def __init__(self, allow: bool, reasons: List[str] = None, filter_rpn: List[Union[str, dict]] = None):
@@ -25,7 +26,7 @@ class PermissionResult:
 
 class OpenPolicyAgentPermission(metaclass=ABCMeta):
     opa_url: str = None
-    user_id: str = None
+    user_id: UUID = None
     role: Optional[UserRole] = None
     scope: str = None
     metadata: {} = {}

@@ -134,6 +134,7 @@ async def filter_by_user_permissions(request: Request,
 
 async def check_user_permissions(request: Request, session: get_session,
                                  user: User = Depends(get_current_active_user)):
+    user.id = str(user.id)
     user_permissions = await gather_permissions(request=request, session=session, user=user)
     await check_permissions(user_permissions)
     return user
